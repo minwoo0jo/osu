@@ -30,13 +30,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double DeltaTime { get; private set; }
 
+        /// <summary>
+        /// Inner angle formed by the last three <see cref="OsuDifficultyHitObject"/> in degrees.
+        /// </summary>
+        public double JumpAngle { get; private set; }
+
+        /// <summary>
+        /// Number of milliseconds until the <see cref="OsuDifficultyHitObject"/> has to be hit.
+        /// </summary>
+        public double TimeUntilHit { get; set; }
+
+        /// <summary>
+        /// Number of objects already on the screen when the <see cref "OsuDifficultyHitObject"> appears
+        /// </summary>
+        public int TrueDensity { get; set; }
+
         private readonly OsuHitObject lastObject;
         private readonly double timeRate;
 
         /// <summary>
         /// Initializes the object calculating extra data required for difficulty calculation.
         /// </summary>
-        public OsuDifficultyHitObject(OsuHitObject currentObject, OsuHitObject lastObject, double timeRate)
+        public OsuDifficultyHitObject(OsuHitObject currentObject, OsuHitObject lastObject, OsuHitObject lastLastObject, double timeRate)
         {
             this.lastObject = lastObject;
             this.timeRate = timeRate;
@@ -46,6 +61,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             setDistances();
             setTimingValues();
             // Calculate angle here
+            OsuHitObject[] triangle = new OsuHitObject[] { currentObject, lastObject, lastLastObject };
+            setAngle(triangle);
         }
 
         private void setDistances()
@@ -76,6 +93,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         {
             // Every timing inverval is hard capped at the equivalent of 375 BPM streaming speed as a safety measure.
             DeltaTime = Math.Max(50, (BaseObject.StartTime - lastObject.StartTime) / timeRate);
+            TimeUntilHit = BaseObject.TimePreempt;
         }
 
         private void computeSliderCursorPosition(Slider slider)
@@ -106,6 +124,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             foreach (var time in scoringTimes)
                 computeVertex(time);
             computeVertex(slider.EndTime);
+        }
+
+        private void calculateAngle(OsuHitObject[] t)
+        {
+            Vector2 v1 = new Vector2(t[2].X - t[1].X, t[2].Y - t[1].Y);
+            Vector2 v2 = new Vector2(t[0].X - t[1].X, t[0].Y - t[1].Y);
+            double angle = Math.Atan2(v2.Y, v2.X) - Math.Atan2(v1.Y, v1.X);
+            //Converting values in range (-2pi, pi) to (0, 180)
+            angle = Math.Abs(angle * (180.0 / Math.PI));
+            angle = (angle > 180) ? (angle - 180) : angle;
+            JumpAngle = angle;
         }
     }
 }
