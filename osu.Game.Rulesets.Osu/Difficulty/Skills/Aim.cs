@@ -18,14 +18,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             double distance = Math.Pow(current.Distance, 0.99);
             double time = current.DeltaTime;
-            
-            if (current.JumpAngle <= 60 && distance > 39)
+
+            // Any 1/4 note above 150 BPM will receive a buff if the angle is 90 degrees or above
+            if (current.JumpAngle <= 90 && distance > 39)
             {
-                time *= 0.67 + Math.Max(time, 100) / 300;
+                time *= 0.67 + Math.Min(time, 100) / 300;
             }
+            // Any jump with an angle of above 120 degrees will scale harder with distance, up to a cap of 1.5
             else if (current.JumpAngle > 120)
             {
-                distance += Math.Pow(current.Distance, 0.99) * ((current.JumpAngle - 120) / 60);
+                distance += Math.Pow(current.Distance, 0.99) * ((current.JumpAngle - 120) / 120);
             }
             double aimValue = distance / time;
 
