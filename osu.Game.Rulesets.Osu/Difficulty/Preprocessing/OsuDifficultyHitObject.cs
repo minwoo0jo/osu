@@ -62,7 +62,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             setTimingValues();
             // Calculate angle here
             OsuHitObject[] triangle = new OsuHitObject[] { currentObject, lastObject, lastLastObject };
-            setAngle(triangle);
+            calculateAngle(triangle);
         }
 
         private void setDistances()
@@ -92,7 +92,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         private void setTimingValues()
         {
             // Every timing inverval is hard capped at the equivalent of 375 BPM streaming speed as a safety measure.
-            DeltaTime = Math.Max(50, (BaseObject.StartTime - lastObject.StartTime) / timeRate);
+            DeltaTime = Math.Max(0, (BaseObject.StartTime - lastObject.StartTime) / timeRate);
             TimeUntilHit = BaseObject.TimePreempt;
         }
 

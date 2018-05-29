@@ -14,6 +14,22 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double SkillMultiplier => 26.25;
         protected override double StrainDecayBase => 0.15;
 
-        protected override double StrainValueOf(OsuDifficultyHitObject current) => Math.Pow(current.Distance, 0.99) / current.DeltaTime;
+        protected override double StrainValueOf(OsuDifficultyHitObject current)
+        {
+            double distance = Math.Pow(current.Distance, 0.99);
+            double time = current.DeltaTime;
+            
+            if (current.JumpAngle <= 60 && distance > 39)
+            {
+                time *= 0.67 + Math.Max(time, 100) / 300;
+            }
+            else if (current.JumpAngle > 120)
+            {
+                distance += Math.Pow(current.Distance, 0.99) * ((current.JumpAngle - 120) / 60);
+            }
+            double aimValue = distance / time;
+
+            return aimValue;
+        }
     }
 }
