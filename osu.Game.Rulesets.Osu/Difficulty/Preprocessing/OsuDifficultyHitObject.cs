@@ -92,6 +92,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         private void setTimingValues()
         {
             // Every timing inverval is hard capped at the equivalent of 375 BPM streaming speed as a safety measure.
+            // Removed for the time being to test higher bpm stream difficulties
             DeltaTime = Math.Max(0, (BaseObject.StartTime - lastObject.StartTime) / timeRate);
             TimeUntilHit = BaseObject.TimePreempt;
         }
@@ -130,10 +131,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         {
             Vector2 v1 = new Vector2(t[2].X - t[1].X, t[2].Y - t[1].Y);
             Vector2 v2 = new Vector2(t[0].X - t[1].X, t[0].Y - t[1].Y);
-            double angle = Math.Atan2(v2.Y, v2.X) - Math.Atan2(v1.Y, v1.X);
-            //Converting values in range (-2pi, pi) to (0, 180)
-            angle = Math.Abs(angle * (180.0 / Math.PI));
-            angle = (angle > 180) ? (angle - 180) : angle;
+            //Do not calculate angle if t[2] and t[1] are close enough to be treated as a stack
+            //Do not calculate if t[0] is stacked perfectly on top of t[1] to avoid dividing by zero
+            if (v1.Length < BaseObject.Radius / 2 || v2.Length == 0)
+            {
+                JumpAngle = -1;
+                return;
+            }
+            //A 1/2 jump after a sequence of 1/4 notes are usually equally easy regardless of angle
+            /*
+             * removed for now due to difficulty in differentiating these situations from high bpm dt 1/2 notes
+            if (t[1].StartTime - t[2].StartTime < 100 && DeltaTime > 200)
+            {
+                JumpAngle = -2;
+                return;
+            }*/
+            double angle = Math.Acos((Vector2.Dot(v1, v2)) / (v1.Length * v2.Length));
+            //Converting values in range (0, 2pi) to (0, 180)
+            angle = angle * (180.0 / Math.PI);
             JumpAngle = angle;
         }
     }
