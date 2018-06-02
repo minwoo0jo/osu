@@ -33,6 +33,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double currentStrain = 1; // We keep track of the strain level at all times throughout the beatmap.
         private double currentSectionPeak = 1; // We also keep track of the peak strain level in the current section.
+        private double staminaThreshold = 256.24; // This is the point at which we start to account for stamina difficulty.
+        private double decayMultiplier = 1; // This is the current multiplier for the decay.
         private readonly List<double> strainPeaks = new List<double>();
 
         /// <summary>
@@ -40,6 +42,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         /// </summary>
         public void Process(OsuDifficultyHitObject current)
         {
+            //At roughly the equivalent of 50 stacked 220 bpm 1/4 notes, we start to decay less too account for stamina.
+            //The threshold at which we do this goes up every time this happens.
+            if (SkillMultiplier == 1400 && currentStrain >= staminaThreshold * 256.24 && decayMultiplier < 1.67)
+            {
+                decayMultiplier *= 1.01;
+                staminaThreshold *= 1.02;
+            }
             currentStrain *= strainDecay(current.DeltaTime);
             if (!(current.BaseObject is Spinner))
                 currentStrain += StrainValueOf(current) * SkillMultiplier;
@@ -95,6 +104,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         /// </summary>
         protected abstract double StrainValueOf(OsuDifficultyHitObject current);
 
-        private double strainDecay(double ms) => Math.Pow(StrainDecayBase, ms / 1000);
+        private double strainDecay(double ms) => Math.Pow(StrainDecayBase * decayMultiplier, ms / 1000);
     }
 }
