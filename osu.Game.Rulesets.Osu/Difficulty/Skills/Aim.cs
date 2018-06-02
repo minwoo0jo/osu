@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             // Any jump with an angle of above 120 degrees will scale harder with distance
             else if (current.JumpAngle > 120)
             {
-                distance += Math.Pow(current.Distance, 1.15) * ((current.JumpAngle - 120) / 90);
+                distance += Math.Pow(current.Distance, 1.4) * ((current.JumpAngle - 120) / 480);
             }
             double aimValue = distance / time;
 
