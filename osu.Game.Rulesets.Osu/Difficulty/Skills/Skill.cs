@@ -116,6 +116,26 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return difficulty;
         }
 
+        public double AverageDifficultyValue()
+        {
+            strainPeaks.Sort((a, b) => b.CompareTo(a)); // Sort from highest to lowest strain.
+
+            double difficulty = 0;
+            double peak = 0;
+            double count = 0;
+
+            // Difficulty is the weighted sum of the highest strains from every section.
+            foreach (double strain in strainPeaks)
+            {
+                if (count == 0)
+                    peak = strain;
+                count++;
+                difficulty += strain;
+            }
+
+            return (difficulty / count) / peak;
+        }
+
         /// <summary>
         /// Calculates the strain value of an <see cref="OsuDifficultyHitObject"/>. This value is affected by previously processed objects.
         /// </summary>

@@ -60,13 +60,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimRating = Math.Sqrt(skills[0].DifficultyValue()) * difficulty_multiplier;
             double speedRating = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
+            double avgAimRating = skills[0].AverageDifficultyValue() * aimRating;
+            double avgSpeedRating = skills[1].AverageDifficultyValue() * speedRating;
 
             double starRating = aimRating + speedRating + Math.Abs(aimRating - speedRating) / 2;
+            double avgStarRating = avgAimRating + avgSpeedRating + Math.Abs(avgAimRating - avgSpeedRating) / 2;
 
             if (categoryDifficulty != null)
             {
                 categoryDifficulty.Add("Aim", aimRating);
                 categoryDifficulty.Add("Speed", speedRating);
+                categoryDifficulty.Add("Average Aim", avgAimRating);
+                categoryDifficulty.Add("Average Speed", avgSpeedRating);
+                categoryDifficulty.Add("Average Star", avgStarRating);
             }
 
             return starRating;
