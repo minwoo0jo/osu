@@ -76,7 +76,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             double scalingFactor = normalized_radius / BaseObject.Radius;
             if (BaseObject.Radius < 30)
             {
-                double smallCircleBonus = Math.Min(30 - BaseObject.Radius, 5) / 50;
+                double smallCircleBonus = (30 - BaseObject.Radius) / 30;
                 scalingFactor *= 1 + smallCircleBonus;
             }
 
@@ -155,7 +155,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             //Floating point bug where x is slightly higher than 1 even though it should be 1.
             //This causes the arccos to return NaN for some reason, so this is hardcoded in
             if (Math.Abs(acosRatio) - 1 < .000001)
-                acosRatio = 1;
+                acosRatio = acosRatio > 0 ? 1 : -1;
             double angle = Math.Acos(acosRatio);
             //Converting values in range (0, 2pi) to (0, 180)
             angle = angle * (180.0 / Math.PI);
