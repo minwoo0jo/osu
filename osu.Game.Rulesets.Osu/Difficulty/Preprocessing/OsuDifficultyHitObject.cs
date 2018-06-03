@@ -151,7 +151,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 JumpAngle = -2;
                 return;
             }*/
-            double angle = Math.Acos((Vector2.Dot(v1, v2)) / (v1.Length * v2.Length));
+            double acosRatio = (Vector2.Dot(v1, v2)) / (v1.Length * v2.Length);
+            //Floating point bug where x is slightly higher than 1 even though it should be 1.
+            //This causes the arccos to return NaN for some reason, so this is hardcoded in
+            if (Math.Abs(acosRatio) - 1 < .000001)
+                acosRatio = 1;
+            double angle = Math.Acos(acosRatio);
             //Converting values in range (0, 2pi) to (0, 180)
             angle = angle * (180.0 / Math.PI);
             JumpAngle = angle;
