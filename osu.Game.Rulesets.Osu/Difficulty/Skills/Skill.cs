@@ -42,12 +42,29 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         /// </summary>
         public void Process(OsuDifficultyHitObject current)
         {
-            //At roughly the equivalent of 50 stacked 220 bpm 1/4 notes, we start to decay less too account for stamina.
+            //At roughly the equivalent of 50 stacked 220 bpm 1/4 notes, we start to decay less to account for stamina.
             //The threshold at which we do this goes up every time this happens.
-            if (SkillMultiplier == 1400 && currentStrain >= staminaThreshold * 256.24 && decayMultiplier < 1.67)
+            if (SkillMultiplier == 1400 && currentStrain >= staminaThreshold && decayMultiplier < 1.67 && current.DeltaTime < 100)
             {
-                decayMultiplier *= 1.01;
-                staminaThreshold *= 1.02;
+                decayMultiplier *= 1.03;
+                staminaThreshold *= Math.Pow(1.03, 2);
+            }
+            //Strain decay will very rapidly approach the normal value once the streaming stops.
+            else if (current.DeltaTime >= 100)
+            {
+                double staminaRecovery = 1 / Math.Pow(1.03, 5);
+                decayMultiplier = Math.Max(1, decayMultiplier * staminaRecovery);
+                staminaThreshold = Math.Max(1, staminaThreshold * Math.Pow(staminaRecovery, 2));
+                double time = current.DeltaTime - 100;
+                //Any extended break during gameplay will most likely force decay to go back to its original value.
+                for (int i = 0; time > 0; i++)
+                {
+                    time -= 75;
+                    decayMultiplier = Math.Max(1, decayMultiplier * Math.Pow(staminaRecovery, 1 + i));
+                    staminaThreshold = Math.Max(234.63, staminaThreshold * Math.Pow(Math.Pow(staminaRecovery, 2), 1 + i));
+                    if (decayMultiplier == 1)
+                        break;
+                }
             }
             currentStrain *= strainDecay(current.DeltaTime);
             if (!(current.BaseObject is Spinner))
