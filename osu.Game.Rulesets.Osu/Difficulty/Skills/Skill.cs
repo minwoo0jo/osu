@@ -119,18 +119,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         public double AverageDifficultyValue()
         {
             strainPeaks.Sort((a, b) => b.CompareTo(a)); // Sort from highest to lowest strain.
-
             double difficulty = 0;
             double peak = 0;
             double count = 0;
 
-            // Difficulty is the weighted sum of the highest strains from every section.
+            // Average Difficulty is the average of the sum of the highest strains from every section.
+            // The lower half is discarded for this purpose
             foreach (double strain in strainPeaks)
             {
                 if (count == 0)
                     peak = strain;
                 count++;
                 difficulty += strain;
+                if (count == strainPeaks.Count / 2)
+                    break;
             }
 
             return (difficulty / count) / peak;
