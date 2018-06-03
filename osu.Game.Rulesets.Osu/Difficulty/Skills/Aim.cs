@@ -20,7 +20,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double time = current.DeltaTime;
 
             // Any 1/4 note above 150 BPM will receive a buff if the angle is 90 degrees or below
-            if (current.JumpAngle <= 90 && distance > 39)
+            if (current.JumpAngle <= 90 && current.JumpAngle >= 0 && distance > 39)
             {
                 time *= 0.67 + Math.Min(time, 100) / 300;
             }

@@ -45,6 +45,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public int TrueDensity { get; set; }
 
+        /// <summary>
+        /// The number of objects the player must process to read properly
+        /// </summary>
+        public double CalculatedDensity { get; set; }
+
         private readonly OsuHitObject lastObject;
         private readonly double timeRate;
 

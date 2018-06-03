@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2007-2018 ppy Pty Ltd <contact@ppy.sh>.
 // Licensed under the MIT Licence - https://raw.githubusercontent.com/ppy/osu/master/LICENCE
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using osu.Game.Rulesets.Osu.Objects;
@@ -48,6 +49,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                     OsuDifficultyHitObject latest = difficultyObjects.Current;
                     latest.TrueDensity = 0;
+                    latest.CalculatedDensity = 0;
                     // Calculate flow values here
 
                     foreach (OsuDifficultyHitObject h in onScreen)
@@ -56,6 +58,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                         h.TimeUntilHit -= latest.DeltaTime;
                         // Calculate reading strain here
                         latest.TrueDensity++;
+                        // Not every note needs to be processed separately to be played properly
+                        // Stacks will not add to density
+                        // Most linear patterns are processed as a single object
+                        latest.CalculatedDensity += densityOfNote(h);
                     }
 
                     onScreen.Enqueue(latest);
@@ -68,6 +74,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private double densityOfNote(OsuDifficultyHitObject h)
+        {
+            // Distance of 52 is approximately 50% overlap with the previous note, not accounting for any small circle bonuses.
+            double densityValue = 0;
+            if (h.Distance > 52)
+                densityValue += Math.Pow(Math.Min(h.Distance, 208) / 208, 2);
+            else
+                return densityValue;
+            if (h.JumpAngle < 0)
+                return densityValue;
+            // The sharper the angle, the more difficult it is to use flow aim, and snapping requires processing each circle separately.
+            densityValue = Math.Min(densityValue + (Math.Max(120 - h.JumpAngle, 0) / 120) * Math.Pow((Math.Max(h.Distance - 99, 5) / 5), 3), 1);
+            // Once the distance is too large to reliably flow through, obtuse jumps require precise reading abilities to aim properly
+            if (h.JumpAngle > 90 && h.Distance > 312)
+                densityValue += (h.JumpAngle - 90 / 90) * 0.2;
+            return densityValue;
+        }
 
         private IEnumerator<OsuDifficultyHitObject> createDifficultyObjectEnumerator(List<OsuHitObject> objects, double timeRate)
         {
