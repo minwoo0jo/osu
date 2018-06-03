@@ -45,11 +45,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public int TrueDensity { get; set; }
 
-        /// <summary>
-        /// The number of objects the player must process to read properly
-        /// </summary>
-        public double CalculatedDensity { get; set; }
-
         private readonly OsuHitObject lastObject;
         private readonly double timeRate;
 
@@ -98,8 +93,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         {
             // Every timing inverval is hard capped at the equivalent of 375 BPM streaming speed as a safety measure.
             // Removed for the time being to test higher bpm stream difficulties
-            DeltaTime = Math.Max(0, (BaseObject.StartTime - lastObject.StartTime) / timeRate);
-            TimeUntilHit = BaseObject.TimePreempt;
+            DeltaTime = Math.Max(40, (BaseObject.StartTime - lastObject.StartTime) / timeRate);
+            TimeUntilHit = BaseObject.TimePreempt / timeRate;
         }
 
         private void computeSliderCursorPosition(Slider slider)

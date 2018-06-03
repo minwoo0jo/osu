@@ -61,20 +61,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (mods.Any(m => !m.Ranked))
                 return 0;
 
-            // Todo: In the future we should apply changes to PreEmpt/AR at an OsuHitObject/BaseDifficulty level, but this is done
-            // locally for now as doing so would modify animations and other things unexpectedly
-            // DO NOT MODIFY THIS
-            double ar = Beatmap.BeatmapInfo.BaseDifficulty.ApproachRate;
-            if (mods.Any(m => m is OsuModHardRock))
-                ar = Math.Min(10, ar * 1.4);
-            if (mods.Any(m => m is OsuModEasy))
-                ar = Math.Max(0, ar / 2);
-
-            double preEmpt = BeatmapDifficulty.DifficultyRange(ar, 1800, 1200, 450) / TimeRate;
-            double hitWindowGreat = (Beatmap.HitObjects.First().HitWindows.Great / 2 - 0.5) / TimeRate;
+            // Todo: These int casts are temporary to achieve 1:1 results with osu!stable, and should be remoevd in the future
+            double hitWindowGreat = (int)(Beatmap.HitObjects.First().HitWindows.Great / 2) / TimeRate;
+            double preEmpt = (int)BeatmapDifficulty.DifficultyRange(Beatmap.BeatmapInfo.BaseDifficulty.ApproachRate, 1800, 1200, 450) / TimeRate;
 
             realApproachRate = preEmpt > 1200 ? (1800 - preEmpt) / 120 : (1200 - preEmpt) / 150 + 5;
-            realOverallDifficulty = (80 - 0.5 - hitWindowGreat) / 6;
+            realOverallDifficulty = (80 - hitWindowGreat) / 6;
 
             // Custom multipliers for NoFail and SpunOut.
             double multiplier = 1.12f; // This is being adjusted to keep the final pp value scaled around what it used to be when changing things
@@ -115,6 +107,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Longer maps are worth more
             double lengthBonus = 0.95f + 0.4f * Math.Min(1.0f, totalHits / 2000.0f) +
                 (totalHits > 2000 ? Math.Log10(totalHits / 2000.0f) * 0.5f : 0.0f);
+            double star = Attributes["Aim"] + Attributes["Speed"];
+            star += (star - 2f * Attributes["Aim"]) / 2;
+            double lengthFactor = 0.5f + Math.Pow(Attributes["Average Star"] / star , 2);
+            Console.WriteLine(lengthFactor);
+            //lengthBonus *= lengthFactor;
 
             aimValue *= lengthBonus;
 
@@ -217,3 +214,4 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         private double totalSuccessfulHits => countGreat + countGood + countMeh;
     }
 }
+

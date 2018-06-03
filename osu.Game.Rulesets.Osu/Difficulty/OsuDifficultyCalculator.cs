@@ -35,7 +35,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 new Aim(),
                 new Speed()
             };
-
             double sectionLength = section_length * TimeRate;
 
             // The first object doesn't generate a strain, so we begin with an incremented section end
@@ -70,8 +69,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             {
                 categoryDifficulty.Add("Aim", aimRating);
                 categoryDifficulty.Add("Speed", speedRating);
-                categoryDifficulty.Add("Average Aim", avgAimRating);
-                categoryDifficulty.Add("Average Speed", avgSpeedRating);
+               // categoryDifficulty.Add("Average Aim", avgAimRating);
+                //categoryDifficulty.Add("Average Speed", avgSpeedRating);
                 categoryDifficulty.Add("Average Star", avgStarRating);
             }
 

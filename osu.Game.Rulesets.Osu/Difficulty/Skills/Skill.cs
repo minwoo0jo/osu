@@ -50,7 +50,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 staminaThreshold *= Math.Pow(1.03, 2);
             }
             //Strain decay will very rapidly approach the normal value once the streaming stops.
-            else if (current.DeltaTime >= 100)
+            else if (SkillMultiplier == 1400 && current.DeltaTime >= 100)
             {
                 double staminaRecovery = 1 / Math.Pow(1.03, 5);
                 decayMultiplier = Math.Max(1, decayMultiplier * staminaRecovery);
