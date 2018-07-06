@@ -30,13 +30,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double DeltaTime { get; private set; }
 
+        /// <summary>
+        /// Inner angle formed by the last three <see cref="OsuDifficultyHitObject"/> in degrees.
+        /// </summary>
+        public double JumpAngle { get; private set; }
+
         private readonly OsuHitObject lastObject;
         private readonly double timeRate;
 
         /// <summary>
         /// Initializes the object calculating extra data required for difficulty calculation.
         /// </summary>
-        public OsuDifficultyHitObject(OsuHitObject currentObject, OsuHitObject lastObject, double timeRate)
+        public OsuDifficultyHitObject(OsuHitObject currentObject, OsuHitObject lastObject, OsuHitObject lastLastObject, double timeRate)
         {
             this.lastObject = lastObject;
             this.timeRate = timeRate;
@@ -46,7 +51,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             setDistances();
             setTimingValues();
             // Calculate angle here
+            OsuHitObject[] triangle = new OsuHitObject[] { currentObject, lastObject, lastLastObject };
+            calculateAngle(triangle);
         }
+
 
         private void setDistances()
         {
@@ -106,6 +114,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             foreach (var time in scoringTimes)
                 computeVertex(time);
             computeVertex(slider.EndTime);
+        }
+
+        private void calculateAngle(OsuHitObject[] t)
+        {
+            Vector2 v1 = new Vector2(t[2].X - t[1].X, t[2].Y - t[1].Y);
+            Vector2 v2 = new Vector2(t[0].X - t[1].X, t[0].Y - t[1].Y);
+            //Do not calculate if t[1] is stacked perfectly on top of t[2] to avoid dividing by zero
+            //Do not calculate if t[0] is stacked perfectly on top of t[1] to avoid dividing by zero
+            if (v1.Length == 0 || v2.Length == 0)
+            {
+                JumpAngle = -1;
+                return;
+            }
+            double acosRatio = (Vector2.Dot(v1, v2)) / (v1.Length * v2.Length);
+            //Floating point rounding error where x is slightly higher than 1 even though it should be 1.
+            //This causes the arccos to return NaN for some reason, so this is hardcoded in
+            if (Math.Abs(acosRatio) - 1 < .000001)
+                acosRatio = acosRatio > 0 ? 1 : -1;
+            double angle = Math.Acos(acosRatio);
+            //Converting values in range (0, 2pi) to (0, 180)
+            angle = angle * (180.0 / Math.PI);
+            JumpAngle = angle;
         }
     }
 }

@@ -38,7 +38,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < objects.Count; i++)
-                yield return new OsuDifficultyHitObject(objects[i], objects[i - 1], timeRate);
+            {
+                if (i == 1)
+                {
+                    // Duplicate the first hitobjects of the map to form the first triangle
+                    yield return new OsuDifficultyHitObject(objects[i], objects[i - 1], objects[i - 1], timeRate);
+                    continue;
+                }
+                yield return new OsuDifficultyHitObject(objects[i], objects[i - 1], objects[i - 2], timeRate);
+            }
         }
     }
 }
