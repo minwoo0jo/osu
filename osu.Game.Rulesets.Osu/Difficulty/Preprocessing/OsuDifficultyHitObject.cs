@@ -130,7 +130,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             double acosRatio = (Vector2.Dot(v1, v2)) / (v1.Length * v2.Length);
             //Floating point rounding error where x is slightly higher than 1 even though it should be 1.
             //This causes the arccos to return NaN for some reason, so this is hardcoded in
-            if (Math.Abs(acosRatio) - 1 < .000001)
+            if (Math.Abs(Math.Abs(acosRatio) - 1) < .000001)
                 acosRatio = acosRatio > 0 ? 1 : -1;
             double angle = Math.Acos(acosRatio);
             //Converting values in range (0, 2pi) to (0, 180)
